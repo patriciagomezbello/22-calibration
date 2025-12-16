@@ -1,0 +1,94 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# =========================
+# Virtual Environments
+# =========================
+.venv/
+venv/
+env/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# VS Code
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# =========================
+# OS / Editor Trash
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# =========================
+# Jupyter / Data Science
+# =========================
+.ipynb_checkpoints/
+*.ipynb
+
+# =========================
+# Logs / Outputs
+# =========================
+logs/
+*.log
+*.out
+
+# =========================
+# Model / Cache Artifacts
+# =========================
+.cache/
+.cline/
+.llm_cache/
+*.pickle
+*.pkl
+*.joblib
+
+# =========================
+# Python Testing / Coverage
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Zip / Export Artifacts
+# =========================
+*.zip
+*.tar
+*.gz
+
+# =========================
+# Data (keep only samples)
+# =========================
+data/*
+!data/README.md
+!data/sample*.csv
+
+# =========================
+# Local Experiments
+# =========================
+experiments/
+tmp/
+scratch/
