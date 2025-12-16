@@ -1,5 +1,5 @@
 def calibrate_p1_5(df):
-    dists = df[[f"D{i}" for i in range(1, 5)]].mean().round().astype(int)
+    dists = df.iloc[-1][["D1","D2","D3","D4"]].values
     base = df.iloc[-1][["P1","P2","P3","P4","P5"]].values
 
     pred = [int(base[0])]
@@ -10,7 +10,7 @@ def calibrate_p1_5(df):
     return pred[:5]
 
 def calibrate_p6_7(df):
-    d = int(df["D67"].mean().round())
+    d = int(df.iloc[-1]["D67"])
     base = int(df.iloc[-1]["P6"])
     p7 = max(1, min(12, base + d))
     return [base, p7]
