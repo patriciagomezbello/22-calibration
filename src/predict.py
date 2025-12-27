@@ -6,9 +6,9 @@ from calibration import calibrate_p1_5, calibrate_p6_7
 from collections import Counter
 from llm_agent import llm_refine
 from config import P1_5_REFINED_RANGE, P6_7_REFINED_RANGE
-from neural_network import NeuralNetwork
+from neural_network import NeuralNetwork, DBN
 
-df = load_data("../data/22.csv")
+df = load_data("data/22.csv")
 df = distance_features(df)
 
 # Define lines
@@ -149,7 +149,7 @@ result = {
     },
 }
 
-# Refine using deep abstract mathematics (LLM)
-result = llm_refine(result)
+# Refine using deep abstract mathematics (LLM) - commented out due to API key
+# result = llm_refine(result)
 
 print(json.dumps(result))

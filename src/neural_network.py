@@ -1,4 +1,41 @@
 import numpy as np
+from sklearn.neural_network import BernoulliRBM
+from sklearn.linear_model import LinearRegression
+import tensorflow as tf
+from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.models import Model
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+
+class DBN:
+    def __init__(self, layers, learning_rate=0.01, n_iter=10):
+        self.rbms = []
+        for i in range(len(layers) - 1):
+            self.rbms.append(
+                BernoulliRBM(
+                    n_components=layers[i + 1],
+                    learning_rate=learning_rate,
+                    n_iter=n_iter,
+                    random_state=0,
+                )
+            )
+        self.regressor = LinearRegression()
+
+    def train(self, X):
+        input_data = X
+        for rbm in self.rbms:
+            rbm.fit(input_data)
+            input_data = rbm.transform(input_data)
+        # Train regressor on final layer
+        self.regressor.fit(input_data, X)  # Autoencoder style
+
+    def predict(self, X):
+        input_data = X
+        for rbm in self.rbms:
+            input_data = rbm.transform(input_data)
+        return self.regressor.predict(input_data)
 
 
 class NeuralNetwork:

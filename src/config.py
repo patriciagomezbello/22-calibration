@@ -1,7 +1,7 @@
 from datetime import date
 
-TARGET_DATE = date(2025, 12, 23)
-DAY_OF_WEEK = 1  # Tuesday
+TARGET_DATE = date(2025, 12, 26)
+DAY_OF_WEEK = 4  # Friday
 P1_5_RANGE = (1, 50)
 P6_7_RANGE = (1, 12)
 
