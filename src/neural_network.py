@@ -39,13 +39,16 @@ class DBN:
 
 
 class NeuralNetwork:
-    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.01):
+    def __init__(
+        self, input_size, hidden_size, output_size, learning_rate=0.01, dropout_rate=0.2
+    ):
         # Initialize weights and biases for two layers
         self.W1 = np.random.randn(input_size, hidden_size) * 0.01
         self.b1 = np.zeros((1, hidden_size))
         self.W2 = np.random.randn(hidden_size, output_size) * 0.01
         self.b2 = np.zeros((1, output_size))
         self.learning_rate = learning_rate
+        self.dropout_rate = dropout_rate
 
     def relu(self, x):
         return np.maximum(0, x)
@@ -57,12 +60,16 @@ class NeuralNetwork:
         exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
         return exp_x / np.sum(exp_x, axis=1, keepdims=True)
 
-    def forward(self, X, regression=True):
+    def forward(self, X, regression=True, training=True):
         # Layer 1: Linear + ReLU (nonlinearity)
         self.Z1 = (
             np.dot(X, self.W1) + self.b1
         )  # Matrix multiplication and vector addition
         self.A1 = self.relu(self.Z1)
+        if training:
+            # Dropout
+            dropout_mask = np.random.rand(*self.A1.shape) > self.dropout_rate
+            self.A1 *= dropout_mask / (1 - self.dropout_rate)
         # Layer 2: Linear
         self.Z2 = np.dot(self.A1, self.W2) + self.b2
         if regression:
@@ -103,7 +110,7 @@ class NeuralNetwork:
                 print(f"Epoch {epoch}, Loss: {loss}")
 
     def predict(self, X, regression=True):
-        output = self.forward(X, regression)
+        output = self.forward(X, regression, training=False)
         if regression:
             return output
         else:

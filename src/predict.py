@@ -54,11 +54,25 @@ positions_p1_5 = df[["P1", "P2", "P3", "P4", "P5"]].values
 # Normalize to 0-1
 positions_p1_5_norm = (positions_p1_5 - 1) / 49  # 1-50 to 0-1
 # Create training data: X is positions at t, y is at t+1
-X_p1_5 = positions_p1_5_norm[:-1]
-y_p1_5 = positions_p1_5_norm[1:]
-# Train NN for P1-P5
-nn_p1_5 = NeuralNetwork(input_size=5, hidden_size=10, output_size=5, learning_rate=0.01)
-nn_p1_5.train(X_p1_5, y_p1_5, epochs=200, regression=True)
+# Split into train and val (80-20)
+split_idx = int(0.8 * len(positions_p1_5_norm))
+X_p1_5 = positions_p1_5_norm[:-1][:split_idx]
+y_p1_5 = positions_p1_5_norm[1:][:split_idx]
+X_val_p1_5 = positions_p1_5_norm[:-1][split_idx:]
+y_val_p1_5 = positions_p1_5_norm[1:][split_idx:]
+# Pre-train with DBN
+dbn_p1_5 = DBN(layers=[5, 10, 5], learning_rate=0.01, n_iter=20)
+dbn_p1_5.train(X_p1_5)
+# Use DBN features for NN init or directly
+# For simplicity, train NN with dropout
+nn_p1_5 = NeuralNetwork(
+    input_size=5, hidden_size=10, output_size=5, learning_rate=0.01, dropout_rate=0.2
+)
+nn_p1_5.train(X_p1_5, y_p1_5, epochs=500, regression=True)
+# Validate
+val_pred = nn_p1_5.predict(X_val_p1_5, regression=True)
+mae = np.mean(np.abs(val_pred - y_val_p1_5))
+print(f"P1-5 Validation MAE: {mae}")
 # Predict next
 last_p1_5_norm = positions_p1_5_norm[-1].reshape(1, -1)
 pred_p1_5_norm = nn_p1_5.predict(last_p1_5_norm, regression=True)
@@ -75,7 +89,12 @@ positions_p6_7 = df[["P6", "P7"]].values
 positions_p6_7_norm = (positions_p6_7 - 1) / 11  # 1-12 to 0-1
 X_p6_7 = positions_p6_7_norm[:-1]
 y_p6_7 = positions_p6_7_norm[1:]
-nn_p6_7 = NeuralNetwork(input_size=2, hidden_size=5, output_size=2, learning_rate=0.01)
+# Pre-train with DBN
+dbn_p6_7 = DBN(layers=[2, 5, 2], learning_rate=0.01, n_iter=20)
+dbn_p6_7.train(X_p6_7)
+nn_p6_7 = NeuralNetwork(
+    input_size=2, hidden_size=5, output_size=2, learning_rate=0.01, dropout_rate=0.2
+)
 nn_p6_7.train(X_p6_7, y_p6_7, epochs=500, regression=True)
 last_p6_7_norm = positions_p6_7_norm[-1].reshape(1, -1)
 pred_p6_7_norm = nn_p6_7.predict(last_p6_7_norm, regression=True)
