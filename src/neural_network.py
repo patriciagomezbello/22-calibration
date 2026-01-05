@@ -1,12 +1,6 @@
 import numpy as np
 from sklearn.neural_network import BernoulliRBM
 from sklearn.linear_model import LinearRegression
-import tensorflow as tf
-from tensorflow.keras.layers import Dense, Input
-from tensorflow.keras.models import Model
-import torch
-import torch.nn as nn
-import torch.optim as optim
 
 
 class DBN:
@@ -40,7 +34,13 @@ class DBN:
 
 class NeuralNetwork:
     def __init__(
-        self, input_size, hidden_size, output_size, learning_rate=0.01, dropout_rate=0.2
+        self,
+        input_size,
+        hidden_size,
+        output_size,
+        learning_rate=0.01,
+        dropout_rate=0.2,
+        weight_decay=0.0001,
     ):
         # Initialize weights and biases for two layers
         self.W1 = np.random.randn(input_size, hidden_size) * 0.01
@@ -49,6 +49,7 @@ class NeuralNetwork:
         self.b2 = np.zeros((1, output_size))
         self.learning_rate = learning_rate
         self.dropout_rate = dropout_rate
+        self.weight_decay = weight_decay
 
     def relu(self, x):
         return np.maximum(0, x)
@@ -61,6 +62,10 @@ class NeuralNetwork:
         return exp_x / np.sum(exp_x, axis=1, keepdims=True)
 
     def forward(self, X, regression=True, training=True):
+        # Noise injection during training
+        if training:
+            noise = np.random.normal(0, 0.2, X.shape)
+            X = X + noise
         # Layer 1: Linear + ReLU (nonlinearity)
         self.Z1 = (
             np.dot(X, self.W1) + self.b1
@@ -92,22 +97,33 @@ class NeuralNetwork:
         dZ1 = dA1 * self.relu_derivative(self.Z1)
         dW1 = np.dot(X.T, dZ1) / m
         db1 = np.sum(dZ1, axis=0, keepdims=True) / m
-        # Update weights (gradient descent)
-        self.W2 -= self.learning_rate * dW2
+        # Update weights (gradient descent with L2 regularization)
+        self.W2 -= self.learning_rate * (dW2 + self.weight_decay * self.W2)
         self.b2 -= self.learning_rate * db2
-        self.W1 -= self.learning_rate * dW1
+        self.W1 -= self.learning_rate * (dW1 + self.weight_decay * self.W1)
         self.b1 -= self.learning_rate * db1
 
-    def train(self, X, y, epochs=1000, regression=True):
+    def train(self, X, y, epochs=1000, regression=True, early_stopping_patience=50):
+        best_loss = float("inf")
+        patience_counter = 0
         for epoch in range(epochs):
             output = self.forward(X, regression)
             self.backward(X, y, output, regression)
+            if regression:
+                loss = np.mean((output - y) ** 2)
+            else:
+                loss = -np.mean(np.sum(y * np.log(output + 1e-8), axis=1))
             if epoch % 100 == 0:
-                if regression:
-                    loss = np.mean((output - y) ** 2)
-                else:
-                    loss = -np.mean(np.sum(y * np.log(output + 1e-8), axis=1))
                 print(f"Epoch {epoch}, Loss: {loss}")
+            # Early stopping
+            if loss < best_loss:
+                best_loss = loss
+                patience_counter = 0
+            else:
+                patience_counter += 1
+            if patience_counter >= early_stopping_patience:
+                print(f"Early stopping at epoch {epoch}")
+                break
 
     def predict(self, X, regression=True):
         output = self.forward(X, regression, training=False)

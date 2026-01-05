@@ -7,3 +7,4 @@ openai
 tensorflow
 torch
 torchvision
+xgboost
